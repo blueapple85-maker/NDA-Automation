@@ -10,7 +10,7 @@ const extractionSchema=obj({
   purposeAssessment:obj({status:en('adequate','needs_revision','unclear'),reason:str}),
   lawIsKorean:en('yes','no','unknown'),disputeIsKCAB:en('yes','no','unknown'),warnings:arr(str)
 });
-const editProperties={id:str,criteria:arr({type:'integer',minimum:1,maximum:17}),action:en('replace','insert_after'),paragraphId:{...str,description:'Exact supplied paragraph ID, not the clause number.'},replacement:{...str,description:'Complete contractual replacement INCLUDING the original clause number and heading, or a new contractual paragraph in the contract language. Do not renumber existing clauses. Negotiation notes go in the separate notes array.'},condition:en('law','dispute','term','survival','purpose','multiple','none'),reason:{...str,description:'Concise Korean explanation for the UI.'}};
+const editProperties={id:str,criteria:arr({type:'integer',minimum:1,maximum:17}),action:en('replace','insert_after'),paragraphId:{...str,description:'Exact supplied paragraph ID, not the clause number.'},replacement:{...str,description:'Complete contractual replacement INCLUDING the original clause number and heading, or a new contractual paragraph in the contract language. Do not renumber existing clauses. Negotiation notes go in the separate notes array.'},condition:{...en('law','dispute','term','survival','purpose','multiple','none'),description:'The explicit user preference this edit IMPLEMENTS, not the general legal topic. Use none for ordinary checklist edits, including damages/injunctions (criterion 8). Use a named preference only when its override is nonempty and this edit changes that preference; multiple only when implementing multiple supplied overrides. Preserve every field in preserveFields exactly. Omit no-op replacements.'},reason:{...str,description:'Concise Korean explanation for the UI.'}};
 function reviewFormat(includeOriginal){
   const edit=obj({...editProperties,...(includeOriginal?{original:str,note:bool}:{})});
   return obj({
@@ -28,4 +28,12 @@ function reviewFormat(includeOriginal){
     recommendations:arr(obj({id:str,otherClauseId:{...str,description:'ID of a clauseInventory item whose criteria includes 17.'},title:str,clause:{...str,description:'Actual clause number, not its full text.'},evidence,impact:str,reason:str,edit})),questions:arr(str)
   });
 }
-module.exports={extractionSchema,reviewSchema:reviewFormat(true),wireReviewSchema:reviewFormat(false)};
+const sourceEvidence=obj({sourceId:{...str,description:'ONE supporting source ID from paragraphs[].sources[].id. For multiple sources, use separate evidence array items. Never write a quote or combine IDs.'}});
+function withSourceReferences(schema){
+  if(schema===evidence)return sourceEvidence;
+  if(Array.isArray(schema))return schema.map(withSourceReferences);
+  if(schema&&typeof schema==='object')return Object.fromEntries(Object.entries(schema).map(([key,value])=>[key,withSourceReferences(value)]));
+  return schema;
+}
+const reviewSchema=reviewFormat(true),wireReviewSchema=reviewFormat(false);
+module.exports={extractionSchema,reviewSchema,wireReviewSchema,sourceExtractionSchema:withSourceReferences(extractionSchema),sourceReviewSchema:withSourceReferences(wireReviewSchema)};

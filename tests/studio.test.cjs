@@ -1,6 +1,7 @@
 const test=require('node:test'),assert=require('node:assert/strict');
 const {strFromU8,strToU8,zipSync}=require('fflate');
 const d=require('../server/document.cjs'),demo=require('../server/demo.cjs'),ai=require('../server/ai.cjs');
+const {sourceFixture}=require('./helpers/source-fixture.cjs');
 function fixture(){const source=demo.document(),info=d.inspect(source),facts=demo.facts(info.records),input={companyName:'Lumen Labs Co., Ltd.',companyId:'party-1',overrides:{law:'',dispute:'',term:'',survival:''},purposeAnswer:'ok',purposeText:''};return{source,info,facts,input,result:demo.review(info.records,facts,input)};}
 test('missing or duplicate generated party IDs trigger a corrective extraction retry',async t=>{
   const {info,facts}=fixture(),invalid=structuredClone(facts);invalid.parties.forEach(p=>{p.id='';});
@@ -9,7 +10,7 @@ test('missing or duplicate generated party IDs trigger a corrective extraction r
   process.env.OPENAI_API_KEY='test-only-not-a-real-key';let calls=0,correction;
   global.fetch=async(url,options)=>{
     calls++;if(calls===2)correction=JSON.parse(JSON.parse(options.body).input[1].content).correction;
-    return new Response(JSON.stringify({status:'completed',output:[{content:[{type:'output_text',text:JSON.stringify(calls===1?invalid:facts)}]}]}),{status:200,headers:{'Content-Type':'application/json'}});
+    return new Response(JSON.stringify({status:'completed',output:[{content:[{type:'output_text',text:JSON.stringify(sourceFixture(calls===1?invalid:facts,info.records))}]}]}),{status:200,headers:{'Content-Type':'application/json'}});
   };
   const result=await ai.extract(info.records);assert.equal(calls,2);assert.equal(correction.issue.code,'PARTY_ID');assert.equal(result.parties[0].id,'party-1');
   const duplicate=structuredClone(facts);duplicate.parties[1].id=duplicate.parties[0].id;
@@ -118,10 +119,10 @@ test('omitting duplicate inventory prose keeps all 17 checks, evidence and misce
   result.otherClauses[0].summary='';assert.throws(()=>ai.validateEdits(result,f.info.records,f.facts,f.input),e=>e.code==='OTHER_SUMMARY_MISSING');
 });
 
-test('AI review retry receives every mismatched citation and exact source text',async t=>{
-  const f=fixture(),valid=wireFixture(f),broken=structuredClone(valid);
-  broken.clauseInventory[5].evidence[0].quote='Invented representative responsibility.';
-  broken.clauseInventory[6].evidence[0].quote='Invented exceptions.';
+test('AI review retry receives every invalid source selection and the same source catalog',async t=>{
+  const f=fixture(),valid=sourceFixture(wireFixture(f),f.info.records),broken=structuredClone(valid);
+  broken.clauseInventory[5].evidence[0].sourceId='missing-5';
+  broken.clauseInventory[6].evidence[0].sourceId='missing-6';
   const originalFetch=global.fetch,originalKey=process.env.OPENAI_API_KEY;
   t.after(()=>{global.fetch=originalFetch;if(originalKey===undefined)delete process.env.OPENAI_API_KEY;else process.env.OPENAI_API_KEY=originalKey;});
   process.env.OPENAI_API_KEY='test-only-not-a-real-key';let calls=0,correction;
@@ -130,9 +131,9 @@ test('AI review retry receives every mismatched citation and exact source text',
     return new Response(JSON.stringify({status:'completed',output:[{content:[{type:'output_text',text:JSON.stringify(calls===1?broken:valid)}]}]}),{status:200});
   };
   const output=await ai.review(f.info.records,f.facts,f.input);
-  assert.equal(calls,2);assert.equal(correction.evidenceCorrections.length,2);
-  assert.equal(correction.evidenceCorrections[0].sourceText,f.info.records[5].text);
-  assert.equal(correction.evidenceCorrections[1].sourceText,f.info.records[6].text);
+  assert.equal(calls,2);assert.equal(correction.referenceCorrections.length,2);
+  assert.equal(correction.referenceCorrections[0].path,'/clauseInventory/5/evidence/0');
+  assert.equal(correction.referenceCorrections[1].path,'/clauseInventory/6/evidence/0');
   assert.equal(output.checklist.length,17);
 });
 test('model never needs to retype original paragraphs and only known anchors are hydrated',()=>{
@@ -207,12 +208,13 @@ const completed=result=>({status:'completed',output:[{content:[{type:'output_tex
 const truncated=()=>({status:'incomplete',incomplete_details:{reason:'max_output_tokens'},output:[{content:[{type:'output_text',text:'{"unfinished":'}]}]});
 
 test('truncated review retries once with more room, discards fragments and produces real revisions',async t=>{
-  const f=fixture(),requests=mockResponses(t,[truncated(),completed(wireFixture(f))]),seen=[];
+  const f=fixture(),requests=mockResponses(t,[truncated(),completed(sourceFixture(wireFixture(f),f.info.records))]),seen=[];
   const result=await ai.review(f.info.records,f.facts,f.input,{onResult:r=>seen.push(r)});
   assert.deepEqual(requests.map(r=>r.max_output_tokens),[32000,64000]);
   assert.deepEqual(requests[1],{...requests[0],max_output_tokens:64000});
   assert.equal(requests[0].reasoning.effort,'medium');assert.equal(requests[0].store,false);
   assert.equal(requests[0].text.format.strict,true);assert.equal(seen.length,1);
+  assert.deepEqual(JSON.parse(requests[0].input[1].content).preserveFields,['law','dispute','term','survival','purpose']);
   assert.equal(result.checklist.length,17);
   const xml=d.parse(strFromU8(d.unpack(d.redline(f.info.baseline,result.edits))['word/document.xml']));
   assert.ok(d.elements(xml,'ins').length);assert.ok(d.elements(xml,'del').length);
@@ -220,11 +222,38 @@ test('truncated review retries once with more room, discards fragments and produ
 
 test('extraction also recovers from a reasoning-only token limit',async t=>{
   const f=fixture(),first=truncated();first.output=[{type:'reasoning',summary:[]}];
-  const requests=mockResponses(t,[first,completed(f.facts)]);
+  const requests=mockResponses(t,[first,completed(sourceFixture(f.facts,f.info.records))]);
   const result=await ai.extract(f.info.records);
   assert.deepEqual(requests.map(r=>r.max_output_tokens),[9000,18000]);
   assert.equal(result.parties.length,f.facts.parties.length);
   assert.equal(requests[0].reasoning.effort,'low');
+});
+
+test('extraction accepts only source selections, restores exact evidence and retries a bad ID once',async t=>{
+  const f=fixture(),valid=sourceFixture(f.facts,f.info.records),bad=structuredClone(valid);
+  bad.purpose.evidence[0].sourceId='missing';
+  const requests=mockResponses(t,[completed(bad),completed(valid)]);
+  const facts=await ai.extract(f.info.records);
+  const payload=JSON.parse(requests[0].input[1].content),repair=JSON.parse(requests[1].input[1].content);
+  assert.deepEqual(payload.paragraphs,repair.paragraphs);
+  assert.equal(repair.correction.referenceCorrections[0].path,'/purpose/evidence/0');
+  assert.deepEqual(Object.keys(requests[0].text.format.schema.properties.purpose.properties.evidence.items.properties),['sourceId']);
+  for(const field of ['purpose','term','survival','law','dispute'])for(const e of facts[field].evidence){
+    assert.ok(f.info.records.find(p=>p.id===e.paragraphId).text.includes(e.quote));
+    assert.equal(e.sourceId,undefined);
+  }
+  assert.ok(facts.survival.evidence[0].quote.includes('three years'));
+  assert.ok(!facts.survival.evidence[0].quote.includes('two years'));
+  await t.test('a second invalid selection fails without accepting generated text',async s=>{
+    const repeated=mockResponses(s,[completed(bad),completed(bad)]);
+    await assert.rejects(()=>ai.extract(f.info.records),e=>e.code==='SOURCE_REFERENCE_INVALID');
+    assert.equal(repeated.length,2);
+  });
+  await t.test('legacy generated quote fields are not silently trusted',async s=>{
+    const generated=structuredClone(valid);generated.purpose.evidence[0].quote='Invented source';
+    mockResponses(s,[completed(generated),completed(generated)]);
+    await assert.rejects(()=>ai.extract(f.info.records),e=>e.code==='RESULT_SCHEMA');
+  });
 });
 
 test('repeated truncation stops without delivering partial data and reports final request and usage',async t=>{
@@ -241,12 +270,12 @@ test('repeated truncation stops without delivering partial data and reports fina
 });
 
 test('expanded budget is retained for evidence repair without allowing another expansion',async t=>{
-  const f=fixture(),bad=wireFixture(f);bad.clauseInventory[0].evidence[0].quote='Invented quotation absent from the source.';
-  const requests=mockResponses(t,[truncated(),completed(bad),completed(wireFixture(f))]);
+  const f=fixture(),bad=sourceFixture(wireFixture(f),f.info.records);bad.clauseInventory[0].evidence[0].sourceId='missing';
+  const requests=mockResponses(t,[truncated(),completed(bad),completed(sourceFixture(wireFixture(f),f.info.records))]);
   const result=await ai.review(f.info.records,f.facts,f.input);
   assert.deepEqual(requests.map(r=>r.max_output_tokens),[32000,64000,64000]);
   const correction=JSON.parse(requests[2].input[1].content).correction;
-  assert.equal(correction.issue.code,'SOURCE_QUOTE_MISMATCH');assert.equal(result.checklist.length,17);
+  assert.equal(correction.issue.code,'SOURCE_REFERENCE_INVALID');assert.equal(result.checklist.length,17);
   await t.test('repair also truncates',async s=>{
     const failing=mockResponses(s,[truncated(),completed(bad),truncated()]);
     await assert.rejects(()=>ai.review(f.info.records,f.facts,f.input),e=>e.code==='AI_INCOMPLETE');
@@ -255,8 +284,8 @@ test('expanded budget is retained for evidence repair without allowing another e
 });
 
 test('token expansion is available if the validation repair is the first request to truncate',async t=>{
-  const f=fixture(),bad=wireFixture(f);bad.clauseInventory[0].evidence[0].quote='Invalid quote';
-  const requests=mockResponses(t,[completed(bad),truncated(),completed(wireFixture(f))]);
+  const f=fixture(),bad=sourceFixture(wireFixture(f),f.info.records);bad.clauseInventory[0].evidence[0].sourceId='missing';
+  const requests=mockResponses(t,[completed(bad),truncated(),completed(sourceFixture(wireFixture(f),f.info.records))]);
   await ai.review(f.info.records,f.facts,f.input);
   assert.deepEqual(requests.map(r=>r.max_output_tokens),[32000,32000,64000]);
   assert.deepEqual(requests[2],{...requests[1],max_output_tokens:64000});

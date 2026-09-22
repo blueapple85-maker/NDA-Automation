@@ -63,7 +63,7 @@ test('AI token retries record limits, usage and provider IDs without prompts or 
 
 test('validation repair logs error codes without quoted contract content',async t=>{
   const f=await fixture(t),records=doc.inspect(demo.document()).records,facts=demo.facts(records),invalid=structuredClone(facts);invalid.parties[0].id='';let calls=0;
-  mockFetch(t,async()=>provider({status:'completed',output:[{content:[{type:'output_text',text:JSON.stringify(++calls===1?invalid:facts)}]}]},'req_validation_'+calls));
+  mockFetch(t,async()=>provider({status:'completed',output:[{content:[{type:'output_text',text:JSON.stringify(require('./helpers/source-fixture.cjs').sourceFixture(++calls===1?invalid:facts,records))}]}]},'req_validation_'+calls));
   await withLogContext(f.logger,{traceId:randomUUID(),stage:'analyze'},()=>ai.extract(records));
   const {text,rows}=await f.read(),failure=rows.find(r=>r.event==='ai.validation_failed');assert.equal(failure.errorCode,'PARTY_ID');assert.equal(failure.retryable,true);
   assert.equal(rows.find(r=>r.event==='ai.retry').retryReason,'validation_error');assert.doesNotMatch(text,/Lumen|Northstar|confidential|sk-test/);

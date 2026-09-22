@@ -79,6 +79,8 @@ function verifyEvidenceTree(value,records,stage='review'){
 }
 
 function correctionFor(error,previous){
+  if(error.referenceIssues)return {issue:error.diagnostic,message:error.message,previous,referenceCorrections:error.referenceIssues,
+    instruction:'Fix ALL listed reference paths using only sourceId values from paragraphs[].sources. Select each supporting sentence separately, including across paragraphs. Do not write quotations, combine IDs, invent IDs or attach unrelated evidence.'};
   return {issue:error.diagnostic,message:error.message,previous,...(error.evidenceIssues?{
     evidenceCorrections:error.evidenceIssues,
     instruction:'Fix ALL listed evidence paths against sourceText and the supplied paragraphs. Copy a continuous, exact source substring supporting the same claim. Keep case, numbers, negation and wording unchanged. Do not use revised clauses or summaries as original evidence. Do not change the source document, fabricate a quote, attach unrelated text, or move edit anchors. Candidate paragraph IDs are suggestions only; check the supported claim and full clause coverage when correcting an evidence location.'
