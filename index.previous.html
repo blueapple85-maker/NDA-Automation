@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <meta name="description" content="계약별 조건과 NDA 법률검토 프롬프트를 준비하는 사내 법무 워크스페이스">
+  <title>NDA Desk · 비밀유지계약 검토</title>
+  <link rel="stylesheet" href="assets/styles.css">
+  <script defer src="assets/review-prompt.js"></script>
+  <script defer src="assets/core.js"></script>
+  <script defer src="assets/docx.js"></script>
+  <script defer src="assets/vendor/docToText.js"></script>
+  <script defer src="assets/document-reader.js"></script>
+  <script defer src="assets/app.js"></script>
+</head>
+<body>
+  <svg class="icon-library" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+    <symbol id="i-grid" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></symbol>
+    <symbol id="i-file" viewBox="0 0 24 24"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6M8 13h8M8 17h5"/></symbol>
+    <symbol id="i-list" viewBox="0 0 24 24"><path d="m3 6 2 2 3-4m-5 9 2 2 3-4m-5 9 2 2 3-4M12 6h9M12 13h9M12 20h9"/></symbol>
+    <symbol id="i-code" viewBox="0 0 24 24"><path d="m8 5-6 7 6 7m8-14 6 7-6 7M14 3l-4 18"/></symbol>
+    <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7h.01"/></symbol>
+    <symbol id="i-upload" viewBox="0 0 24 24"><path d="M12 16V3m-5 5 5-5 5 5M4 15v4a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-4"/></symbol>
+    <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M4 12h16m-6-6 6 6-6 6"/></symbol>
+    <symbol id="i-check" viewBox="0 0 24 24"><path d="m5 12 4 4L19 6"/></symbol>
+    <symbol id="i-lock" viewBox="0 0 24 24"><rect x="5" y="10" width="14" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3M12 14v3"/></symbol>
+    <symbol id="i-copy" viewBox="0 0 24 24"><rect x="8" y="8" width="13" height="13" rx="2"/><path d="M16 8V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h3"/></symbol>
+    <symbol id="i-save" viewBox="0 0 24 24"><path d="M12 3v13m-5-5 5 5 5-5M4 17v3a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-3"/></symbol>
+    <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+  </svg>
+  <a class="skip-link" href="#main">본문으로 이동</a>
+  <aside class="sidebar">
+    <a class="brand" href="#review" aria-label="NDA Desk 홈"><span class="brand-mark">n<span> /</span></span><span>NDA<span class="brand-light"> Desk</span><small>LEGAL WORKSPACE</small></span></a>
+    <button id="new-case" class="new-case"><svg class="icon"><use href="#i-plus"/></svg>새로운 검토</button>
+    <div class="nav-label">WORKSPACE</div>
+    <nav class="navigation" aria-label="주 메뉴">
+      <button data-view="review" class="nav-item active" aria-current="page"><svg class="icon"><use href="#i-grid"/></svg>계약 검토<span class="nav-dot"></span></button>
+      <button data-view="checklist" class="nav-item"><svg class="icon"><use href="#i-list"/></svg>검토 체크리스트<span class="nav-count">21</span></button>
+      <button data-view="prompt" class="nav-item"><svg class="icon"><use href="#i-code"/></svg>검토 프롬프트</button>
+      <button data-view="guide" class="nav-item"><svg class="icon"><use href="#i-info"/></svg>사용 안내</button>
+    </nav>
+    <div class="sidebar-note"><span class="tiny-label">BUILT FOR LEGAL</span><p>검토의 기준은 일관되게.<br>계약의 조건은 개별적으로.</p><div class="version-dot">검토 프롬프트 v2</div></div>
+    <div class="sidebar-footer"><span class="avatar">L</span><div>사내 법무<small>Local workspace</small></div><svg class="icon"><use href="#i-lock"/></svg></div>
+  </aside>
+  <div class="app-shell">
+    <header class="topbar"><div class="breadcrumb">워크스페이스<span>/</span><strong id="page-label">계약 검토</strong></div><div class="topbar-actions"><span class="local-status"><span></span>현재 탭에만 보관</span><button class="button quiet small" id="import-case"><svg class="icon"><use href="#i-upload"/></svg>불러오기</button><button class="button outline small" id="save-case"><svg class="icon"><use href="#i-save"/></svg>파일 저장</button></div></header>
+    <main id="main" tabindex="-1">
+      <section id="view-review" class="view">
+        <div class="page-heading"><div><div class="eyebrow">NDA REVIEW WORKSPACE</div><h1>비밀유지계약 검토<span class="title-dot">.</span></h1><p>계약의 맥락부터 확인하고, 우리 회사에 맞는 검토를 준비하세요.</p></div><button class="button outline" id="load-demo"><svg class="icon"><use href="#i-file"/></svg>예시로 살펴보기</button></div>
+        <nav class="steps" aria-label="검토 준비 단계">
+          <button data-step="1" class="step active" aria-current="step"><span class="step-number">01</span><span><strong>계약 입력</strong><small>문서와 거래의 맥락</small></span><svg class="icon step-arrow"><use href="#i-arrow"/></svg></button>
+          <button data-step="2" class="step"><span class="step-number">02</span><span><strong>건별 조건 확인</strong><small>네 가지 조건을 개별 확인</small></span><svg class="icon step-arrow"><use href="#i-arrow"/></svg></button>
+          <button data-step="3" class="step"><span class="step-number">03</span><span><strong>검토 요청 준비</strong><small>프롬프트 생성 및 결과 보관</small></span></button>
+        </nav>
+        <div class="workspace-grid">
+          <div class="work-area">
+            <section id="stage-1" class="stage">
+              <div class="card document-card"><div class="card-heading"><div><span class="section-kicker">DOCUMENT</span><h2>검토할 계약서</h2></div><span class="required-badge">필수</span></div>
+                <div class="input-switch" aria-label="계약서 입력 방식"><button id="mode-file" class="selected" aria-pressed="true">파일 업로드</button><button id="mode-text" aria-pressed="false">텍스트 붙여넣기</button></div>
+                <div id="upload-panel"><label class="drop-zone" id="drop-zone" for="document-file"><span class="upload-icon"><svg class="icon"><use href="#i-upload"/></svg></span><strong>계약서를 여기에 놓아주세요</strong><span>또는 <b>파일 선택하기</b></span><small>DOC, DOCX, TXT, MD · 최대 10 MB</small><input id="document-file" type="file" accept=".doc,.docx,.txt,.md" class="visually-hidden"></label></div>
+                <div id="document-loaded" class="file-info" hidden><svg class="icon"><use href="#i-file"/></svg><div><strong id="document-name"></strong><small id="document-meta"></small></div><button class="button quiet small" id="change-file">파일 변경</button></div>
+                <div id="text-panel" hidden><label for="contract-text">계약 원문 <span class="required-star">*</span><span id="text-count" class="field-meta">0자</span></label><textarea id="contract-text" rows="11" spellcheck="false" placeholder="NDA 전문과 관련 별첨을 붙여넣어 주세요. 조항 번호와 서명란을 함께 포함하면 검토 근거를 확인하기 좋습니다."></textarea></div>
+                <p id="extraction-note" class="helper-text">문서는 이 브라우저에서 처리되며, 자동으로 외부에 전송되지 않습니다.</p>
+                <p class="helper-text">원문을 수정하면 건별 조건을 다시 확인해야 합니다.</p>
+                <div id="document-error" class="field-error" role="alert"></div>
+                <details class="input-details"><summary>문서 상태와 검토 범위</summary><div class="form-grid details-content"><div class="field"><label for="document-state">문서 상태</label><select id="document-state" data-field="documentState"><option value="">확인 필요</option>원본</option><option>법무 검토본</option><option>상대방 수정본</option><option>서명본</option></select></div><div class="field"><label for="document-scope">입력 범위</label><select id="document-scope" data-field="documentScope"><option value="">전체 포함 여부 확인 필요</option>전문·별첨·서명란 모두 포함</option><option>일부 문서만 제공</option></select></div><div class="field full"><label for="document-notes">누락된 별첨 또는 확인할 사항</label><textarea id="document-notes" data-field="documentNotes" rows="2" placeholder="문서 버전, 우선 언어, 누락 페이지, OCR 오류 등을 입력하세요."></textarea></div></div></details>
+              </div>
+              <div class="card"><div class="card-heading"><div><span class="section-kicker">CONTEXT</span><h2>당사자와 거래 배경</h2></div><span class="soft-label">검토 방향의 기준</span></div><div class="form-grid">
+                <div class="field"><label for="our-company">우리 회사 법인명 <span class="required-star">*</span></label><input id="our-company" data-field="ourCompany" placeholder="정식 법인명 입력" autocomplete="organization"></div>
+                <div class="field"><label for="counterparty">상대방 법인명</label><input id="counterparty" data-field="counterparty" placeholder="정식 법인명 또는 확인 필요"></div>
+                <div class="field"><label for="information-flow">실제 정보 흐름</label><select id="information-flow" data-field="flow"><option value="">아직 확인하지 않았어요</option value="both">양방향 · 서로 제공하고 받음</option><option value="recipient">상대방 → 우리 회사</option><option value="discloser">우리 회사 → 상대방</option><option value="unknown">미정</option></select></div>
+                <div class="field"><label for="contract-type">문언상 NDA 유형 <span class="optional">알고 있는 경우</span></label><select id="contract-type" data-field="contractType"><option value="">원문을 통해 판단 필요</option value="mutual">상호 NDA</option><option value="unilateral">일방 NDA</option><option value="mixed_or_asymmetric">혼합형 · 비대칭</option></select></div>
+                <div class="field full"><label for="project-name">검토 건 이름</label><input id="project-name" data-field="projectName" placeholder="프로젝트 또는 거래 이름"></div>
+                <div class="field full"><label for="purpose">거래와 비밀정보 사용 목적</label><textarea id="purpose" data-field="purpose" rows="3" placeholder="어떤 거래를 위해, 어떤 정보를 공유하는지 알려주세요."></textarea></div>
+              </div>
+              <div class="context-hint"><svg class="icon"><use href="#i-info"/></svg><span>상호 NDA는 보호와 부담의 균형을, 우리 회사가 수령자인 일방 NDA는 불필요한 의무와 책임을 중심으로 검토합니다.</span></div>
+              <details class="input-details"><summary>추가 배경 및 회사 정책</summary><div class="form-grid details-content"><div class="field full"><label for="party-mapping">당사자 대응관계 및 공유 대상</label><textarea id="party-mapping" data-field="partyMapping" rows="2" placeholder="계약상 약칭, 설립 관할, 서명권한, 계열사·임직원·외부 전문가 공유 필요성"></textarea></div><div class="field full"><label for="information-details">정보 및 운영 제약</label><textarea id="information-details" data-field="informationDetails" rows="3" placeholder="각 당사자가 제공할 정보, 체결 전 공개, 영업비밀·개인정보, 법정 보관·백업 방식"></textarea></div><div class="field full"><label for="special-terms">특수 거래 조건</label><textarea id="special-terms" data-field="specialTerms" rows="3" placeholder="소개·우회거래, 수수료, 공동개발·라이선스, 샘플·시험, 후속계약, 통지처 등"></textarea></div><div class="field full"><label for="company-policy">이번 건에 적용할 회사 정책</label><textarea id="company-policy" data-field="companyPolicy" rows="3" placeholder="확정된 정책과 협상 가능한 대안을 구분하여 입력하세요. 네 가지 건별 조건은 다음 단계에서 각각 확인합니다."></textarea></div></div></details>
+              <div id="context-error" class="field-error" role="alert"></div></div>
+              <div class="stage-footer"><span><svg class="icon"><use href="#i-lock"/></svg>입력 내용은 자동 저장되지 않습니다.</span><button id="next-conditions" class="button primary">건별 조건 확인<svg class="icon"><use href="#i-arrow"/></svg></button></div>
+            </section>
+            <section id="stage-2" class="stage" hidden>
+              <div class="notice"><svg class="icon"><use href="#i-info"/></svg><div><strong>계약마다 새롭게 확인합니다.</strong><p>원문 조건과 이번 건에 적용할 조건을 구분해 주세요. 미확인·미정 상태에서도 다른 조항의 검토 요청을 준비할 수 있습니다.</p></div></div>
+              <div id="condition-cards"></div>
+              <div class="stage-footer"><button class="button outline" data-go-step="1">이전 단계</button><button class="button primary" id="next-request">검토 요청 준비<svg class="icon"><use href="#i-arrow"/></svg></button></div>
+            </section>
+            <section id="stage-3" class="stage" hidden>
+              <div class="card request-card"><div class="card-heading"><div><span class="section-kicker">REVIEW REQUEST</span><h2>검토 요청이 준비되었습니다</h2></div><span class="soft-label">AI 미연결</span></div><p class="section-description">입력한 계약과 건별 조건을 검토 프롬프트 v2에 담았습니다. 사내에서 승인한 AI 환경에 전달하여 검토를 진행하세요.</p><div id="request-status" class="notice compact"></div><div class="request-metrics"><div><strong>13</strong><span>핵심 검토 항목</span></div><div><strong>8</strong><span>추가 검토 모듈</span></div><div><strong id="request-confirmed">0 / 4</strong><span>건별 조건 확인</span></div></div><div class="request-actions"><button class="button primary" id="copy-request"><svg class="icon"><use href="#i-copy"/></svg>전체 요청 복사</button><button class="button outline" id="download-request"><svg class="icon"><use href="#i-save"/></svg>요청 다운로드</button></div><details class="input-details"><summary>전달할 내용 미리보기</summary><div class="preview-tabs"><button id="preview-case" class="selected">건별 입력</button><button id="preview-full">전체 프롬프트</button></div><pre id="request-preview" class="text-preview" tabindex="0"></pre></details></div>
+              <div class="card"><div class="card-heading"><div><span class="section-kicker">REVIEW OUTPUT</span><h2>검토 결과 보관</h2></div><span class="soft-label">사용자 입력</span></div><p class="section-description">AI 검토 결과를 붙여넣어 이 건과 함께 보관하세요. 현재 화면에서 법률검토를 자동 수행하지는 않습니다.</p><div id="result-stale" class="notice compact" hidden>결과 보관 후 계약 또는 조건이 변경되었습니다. 최신 입력에 대한 결과인지 확인해 주세요.</div><label for="review-result" class="visually-hidden">외부 AI 검토 결과</label><textarea id="review-result" rows="10" placeholder="검토 요약, 체크리스트, 쟁점별 수정 문구와 확인 질문 등 검토 결과를 붙여넣어 주세요."></textarea><div class="result-actions"><span class="helper-text">최종 문안은 담당 변호사가 확인합니다.</span><button class="button outline small" id="download-result" disabled><svg class="icon"><use href="#i-save"/></svg>결과 다운로드</button></div></div><div class="stage-footer"><button class="button outline" data-go-step="2">조건 다시 확인</button><button class="button outline" id="save-case-bottom">검토 건 파일 저장</button></div>
+            </section>
+          </div>
+          <aside class="review-summary" aria-label="현재 검토 건 요약"><div class="summary-card"><div class="summary-top"><span class="section-kicker">THIS REVIEW</span><span class="status-pill">작성 중</span></div><h2 id="summary-name">새로운 NDA 검토</h2><span id="case-id" class="case-id"></span><div class="summary-divider"></div><dl class="summary-details"><div><dt>계약 문서</dt><dd id="summary-document">아직 입력하지 않았어요</dd></div><div><dt>우리 회사</dt><dd id="summary-company">입력 대기</dd></div><div><dt>정보 흐름</dt><dd id="summary-flow">확인 대기</dd></div></dl><div class="summary-divider"></div><div class="confirmation-heading"><strong>건별 조건</strong><span><b id="confirmed-count">0</b> / 4 확인</span></div><div class="progress-track"><span id="condition-progress"></span></div><ul id="summary-conditions" class="condition-status-list"></ul><p class="summary-footnote">원문에 적힌 조건도 이번 건의 확인이 필요합니다.</p></div><div class="scope-card"><span class="scope-icon"><svg class="icon"><use href="#i-list"/></svg></span><h3>빠짐없이, 맥락에 맞게</h3><p>13개 핵심 항목을 검토하고,<br>우회거래·수수료·라이선스 등<br>추가 쟁점을 함께 살핍니다.</p><button class="text-link" data-view="checklist">검토 기준 살펴보기 <span>↗</span></button></div></aside>
+        </div>
+      </section>
+      <section id="view-checklist" class="view" hidden><div class="page-heading"><div><div class="eyebrow">REVIEW FRAMEWORK</div><h1>검토 체크리스트<span class="title-dot">.</span></h1><p>핵심 항목 13개와 추가 모듈 8개. 실제 판단은 계약의 맥락을 따릅니다.</p></div><span class="version-badge">PROMPT V2</span></div><div class="notice"><svg class="icon"><use href="#i-info"/></svg><div>아래는 검토 기준입니다. 현재 계약의 위험도나 검토 완료 상태를 뜻하지 않습니다. 추가 모듈은 관련 조항·거래가 있을 때 적용하며, A7 문서 정합성은 항상 확인합니다.</div></div><div class="checklist-heading"><h2>핵심 검토 항목</h2><span>CORE · 13</span></div><div id="core-checklist" class="checklist-grid"></div><div class="checklist-heading"><h2>추가 검토 모듈</h2><span>CONTEXT · 8</span></div><div id="extra-checklist" class="checklist-grid"></div></section>
+      <section id="view-prompt" class="view" hidden><div class="page-heading"><div><div class="eyebrow">SYSTEM PROMPT</div><h1>검토 프롬프트<span class="title-dot">.</span></h1><p>5개 NDA 세트의 비교 분석을 반영한 검토 지침 v2입니다.</p></div><button class="button primary" id="copy-system"><svg class="icon"><use href="#i-copy"/></svg>프롬프트 복사</button></div><div class="card"><div class="prompt-meta"><span class="version-badge">VERSION 2</span><span>13개 핵심 항목 · 8개 추가 모듈 · 건별 확인</span></div><pre id="system-prompt" class="system-prompt" tabindex="0"></pre></div></section>
+      <section id="view-guide" class="view" hidden><div class="page-heading"><div><div class="eyebrow">QUICK START</div><h1>검토를 시작하는 방법<span class="title-dot">.</span></h1><p>계약 입력부터 검토 결과 보관까지, 한 번에 준비하세요.</p></div></div><div class="guide-grid"><article class="card"><span class="guide-number">01</span><h2>계약과 맥락을 입력하세요</h2><p>DOC·DOCX, UTF-8 TXT·MD 파일을 올리거나 원문을 직접 붙여넣습니다. 우리 회사 법인명과 실제 정보 흐름을 입력하면 검토 방향을 정하는 데 도움이 됩니다.</p><p>DOC는 Word 97–2003 바이너리 형식을 지원하며, 식별된 삭제 표시는 제외하고 삽입 문구를 반영합니다. 암호화 파일·Word 6/95·RTF/HTML을 DOC로 저장한 파일은 DOCX로 다시 저장해 주세요. DOCX는 삽입을 반영하고 삭제·이동 전 문구를 제외하여 읽습니다. 표는 텍스트로 펼치며, 댓글·삭제 문구·머리말·꼬리말·각주는 별도 참고 자료로 전달합니다. 이미지·텍스트 상자·별첨·레이아웃의 완전성은 원본과 대조해 주세요. PDF·HWP는 텍스트로 변환한 후 붙여넣습니다.</p></article><article class="card"><span class="guide-number">02</span><h2>네 가지 조건을 확인하세요</h2><p>계약기간, 존속기간, 준거법, 분쟁해결은 매 건 별도로 결정합니다. 관련 문단 후보를 참고하여 원문 조건을 확인한 다음 유지·변경·미정을 선택하세요.</p><p>검색 후보는 키워드가 포함된 문단이며, 법률적 추출 결과가 아닙니다. 기간의 기산점과 예외, 중재의 세부 조건도 직접 확인해야 합니다. 미정은 존속 없음이나 원문 동의를 뜻하지 않습니다.</p></article><article class="card"><span class="guide-number">03</span><h2>검토 요청을 전달하세요</h2><p>전체 요청을 복사하거나 Markdown 파일로 내려받아 사내 승인 AI 환경에서 사용합니다. API를 사용하는 경우에는 시스템 지침과 계약 데이터를 구분해 전달하세요.</p><p>이 HTML에는 AI 서버 연결이 없습니다. 결과는 외부에서 받아 붙여넣고, 담당 변호사가 원문 근거·수정 문구·확인 질문을 검증합니다. 확인이 남은 조건을 체결 가능한 최종 문안으로 간주하지 않습니다.</p></article><article class="card"><span class="guide-number">04</span><h2>검토 건을 파일로 보관하세요</h2><p>‘파일 저장’은 원문·조건·결과를 JSON 파일로 내려받습니다. ‘불러오기’로 같은 건을 이어갈 수 있습니다. 새 검토를 시작하면 앞선 건의 조건은 승계되지 않습니다.</p><p>현재 입력은 탭 메모리에만 있으며 새로고침하면 사라집니다. 문서가 자동으로 업로드되거나 브라우저에 영구 저장되지 않습니다. 내려받은 파일에는 계약 원문이 포함됩니다.</p></article></div></section>
+      <footer class="page-footer"><span>NDA Desk</span><span>일관된 검토 기준. 계약별로 확인하는 조건.</span><span>검토 프롬프트 v2</span></footer>
+    </main>
+  </div>
+  <input id="case-file" type="file" accept=".json" hidden>
+  <dialog id="confirm-dialog"><div class="dialog-icon"><svg class="icon"><use href="#i-file"/></svg></div><h2 id="dialog-title"></h2><p id="dialog-description"></p><div class="dialog-actions"><button class="button outline" id="dialog-cancel">취소</button><button class="button primary" id="dialog-confirm">계속</button></div></dialog>
+  <div id="toast" role="status" aria-live="polite" hidden></div>
+  <noscript><div class="noscript">이 화면을 사용하려면 브라우저의 JavaScript를 켜 주세요.</div></noscript>
+</body>
+</html>

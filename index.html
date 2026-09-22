@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <meta name="description" content="계약의 핵심을 확인하고, 우리 회사의 입장에서 NDA를 검토하는 워크스페이스.">
+  <title>NDA Studio — 비밀유지계약 법률 자동검토</title>
+  <link rel="stylesheet" href="assets/studio.css">
+  <script defer src="assets/studio.js"></script>
+</head>
+<body>
+  <a class="skip-link" href="#main-content">본문으로 건너뛰기</a>
+  <aside class="workspace-sidebar" aria-label="워크스페이스 메뉴">
+    <a class="sidebar-brand" href="./" aria-label="NDA Studio 처음으로"><span class="brand-symbol">n.</span><span>NDA<span class="brand-light"> STUDIO</span></span></a>
+    <p class="sidebar-label">LEGAL WORKSPACE</p>
+    <button class="workspace-tab restart" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M6 3h8l4 4v14H6zM14 3v5h4M9 12h6M9 16h6"/></svg><span>새 계약 검토</span><span class="nav-plus">＋</span></button>
+    <div class="sidebar-divider"></div>
+    <p class="sidebar-label">YOUR REVIEW</p>
+    <nav class="side-steps" aria-label="검토 단계 이동">
+      <button type="button" data-stage="1" class="current" aria-current="step"><span>01</span>문서 업로드<i></i></button>
+      <button type="button" data-stage="2" disabled><span>02</span>검토 기준 설정<i></i></button>
+      <button type="button" data-stage="3" disabled><span>03</span>수정본 및 권고사항<i></i></button>
+      <button type="button" data-stage="4" disabled><span>04</span>최종 다운로드<i></i></button>
+    </nav>
+    <div class="sidebar-bottom">
+      <div class="sidebar-note"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><path d="m12 3 8 3v6c0 5-8 9-8 9s-8-4-8-9V6zM8.5 12l2.5 2.5 4.5-5"/></svg><strong>신중한 검토의 시작.</strong><p>원문은 그대로 보관하고,<br>모든 수정은 기록으로 남깁니다.</p></div>
+      <button id="guide-button" class="sidebar-help" type="button"><span>?</span> 검토 가이드 <span aria-hidden="true">↗</span></button>
+      <div class="sidebar-signature">LESS COMPLEXITY. MORE CLARITY.</div>
+    </div>
+  </aside>
+  <div class="app-shell">
+  <header class="site-header">
+    <div class="header-location"><span class="header-workspace">워크스페이스</span><span class="breadcrumb-divider">/</span><strong id="current-location">새 계약 검토</strong></div>
+    <div class="header-right"><span id="connection-status" class="connection"><i></i>연결 확인 중</span><button id="setup-button" class="text-button" type="button">연결 설정 ↗</button></div>
+  </header>
+  <main id="main-content">
+    <div class="workspace-heading"><span>NDA REVIEW WORKSPACE</span><span class="workspace-edition">DESIGNED FOR CLARITY <span aria-hidden="true">✳</span></span></div>
+    <nav class="stepper" aria-label="검토 진행 단계"><ol>
+      <li class="active" data-step="1" aria-current="step"><span>01</span> 문서 업로드</li>
+      <li data-step="2"><span>02</span> 검토 기준</li>
+      <li data-step="3"><span>03</span> 수정본 · 권고사항</li>
+      <li data-step="4"><span>04</span> 최종 수정본</li>
+    </ol></nav>
+    <div id="error" class="notice error" role="alert" hidden><div class="error-body"><strong id="error-text"></strong><div id="error-diagnostic" hidden></div></div><button id="retry-button" type="button" class="text-button" hidden>다시 시도</button><button id="dismiss-error" type="button" class="icon-button" aria-label="오류 안내 닫기">×</button></div>
+    <div id="demo-banner" class="notice demo-notice" hidden><strong>DEMO</strong><span>가상의 계약으로 기능을 체험하고 있습니다. 이 결과는 AI 법률검토가 아닙니다.</span></div>
+    <section id="step-1" class="step-panel">
+      <div class="hero-grid">
+        <div class="hero-copy">
+          <p class="eyebrow"><span class="short-line"></span> CLEAR TERMS. CONFIDENT DECISIONS.</p>
+          <h1>계약의 핵심을,<br><span>명확하게.</span></h1>
+          <p class="hero-subtitle">비밀유지계약(NDA) 법률 자동검토</p>
+          <p class="muted hero-description">복잡한 조항 속, 우리 회사에 중요한 것부터.<br>계약서를 업로드하고 원하는 조건을 알려주세요.<br>변경 이력이 담긴 Word 수정본으로 정리해 드립니다.</p>
+          <div class="hero-tags"><span>17개 항목 검토</span><span>한국어 · English</span><span>Word 변경 이력</span></div>
+          <div class="document-preview" aria-label="Word 변경 이력 예시">
+            <div class="preview-file"><span class="preview-file-icon" aria-hidden="true">W</span><div><strong>Non-disclosure agreement</strong><span>수정본 미리보기 예시</span></div><span class="preview-dots" aria-hidden="true">···</span></div>
+            <div class="preview-clause"><span class="preview-line-number">05</span><p>The Receiving Party shall protect the<br>Confidential Information using <del>strict care</del><br><ins>at least reasonable care.</ins></p></div>
+            <div class="preview-bottom"><span><i></i> 변경 내용 추적</span><span>당신의 판단을 위한 명확한 기록 ↗</span></div>
+          </div>
+        </div>
+        <div class="upload-card">
+          <div class="card-topline"><span class="eyebrow">START A REVIEW</span><span class="upload-card-badge">새로운 검토</span></div>
+          <h2>어떤 계약을 검토할까요?</h2><p class="muted">검토할 Word 문서를 선택해 주세요.</p>
+          <label id="drop-zone" class="drop-zone" for="file-input" tabindex="0">
+            <span class="upload-symbol" aria-hidden="true"><svg viewBox="0 0 40 44" fill="none"><path d="M9 3h14l9 9v26a3 3 0 0 1-3 3H9a3 3 0 0 1-3-3V6a3 3 0 0 1 3-3Z" stroke="currentColor" stroke-width="1.5"/><path d="M23 3v9h9M19 31V19m-5 5 5-5 5 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span><strong>계약서를 이곳에 놓아주세요</strong><span>또는 <b>파일 찾아보기</b></span><span class="upload-types">DOCX · DOC <span aria-hidden="true">/</span> 최대 10MB</span>
+            <input id="file-input" type="file" accept=".doc,.docx,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document" class="sr-only">
+          </label>
+          <div id="selected-file" class="file-row" hidden><span class="file-icon">W</span><div><strong id="file-name"></strong><span id="file-size" class="micro"></span></div><button id="remove-file" type="button" class="icon-button" aria-label="선택한 파일 제거">×</button></div>
+          <button id="upload-button" type="button" class="button primary full" disabled>계약서 분석 시작 <span aria-hidden="true">→</span></button>
+          <p class="privacy-copy">검토 시 문서 내용이 OpenAI API로 전송됩니다.<br>서버의 검토 자료는 2시간 후 삭제되며, 원본 파일은 변경하지 않습니다.</p>
+          <div class="demo-entry"><span>어떻게 검토하는지 궁금하다면</span><button id="demo-button" type="button" class="text-button">예시로 체험하기 ↗</button></div>
+        </div>
+      </div>
+      <div id="setup-notice" class="notice setup-notice" hidden><span id="setup-notice-text"></span><button id="setup-inline" class="text-button" type="button">설정 안내 →</button></div>
+      <div class="features-heading"><span class="eyebrow">A THOUGHTFUL REVIEW, EVERY STEP.</span><span class="micro">업로드부터 수정본까지, 하나의 흐름으로.</span></div>
+      <div class="intro-features">
+        <article><span class="feature-number">01</span><h3>핵심부터 확인</h3><p>당사자, NDA 유형, 주요 조건을<br>원문 근거와 함께 확인합니다.</p></article>
+        <article><span class="feature-number">02</span><h3>17가지 검토 기준</h3><p>비밀정보의 범위부터 반환·폐기까지,<br>당사자와 거래의 맥락을 반영합니다.</p></article>
+        <article><span class="feature-number">03</span><h3>선택 가능한 수정</h3><p>추가 권고는 직접 선택하고,<br>Word에서 변경 내용을 수락·거절합니다.</p></article>
+      </div>
+    </section>
+    <section id="step-2" class="step-panel" hidden aria-labelledby="facts-title">
+      <div class="page-heading"><div><p class="eyebrow">REVIEW PREFERENCES</p><h1 id="facts-title">검토의 기준을 정해주세요.</h1><p class="muted">원문의 핵심정보를 확인하고, 대리하는 회사와 원하는 조건을 선택하세요.</p></div><button class="text-button restart" type="button">새 문서 검토 ↗</button></div>
+      <div id="document-summary" class="document-summary"></div><div id="facts-warnings"></div>
+      <div id="stale-notice" class="notice" role="status" hidden>검토 기준이 변경되었습니다. 아래에서 1차 수정본을 다시 생성하면 새로운 조건이 반영됩니다.</div>
+      <form id="preferences-form">
+        <section class="panel"><div class="section-heading"><span class="section-number">01</span><div><h2>어느 회사를 대리하나요?</h2><p class="muted">한 회사를 선택하세요. 설립국은 계약서에 명시된 내용을 기준으로 표시합니다.</p></div><span class="required-label">필수</span></div><div id="party-list" class="party-grid"></div></section>
+        <section class="panel"><div class="section-heading"><span class="section-number">02</span><div><h2>비밀정보를 어떤 목적으로 사용하나요?</h2><p class="muted">현재 목적의 적정성을 확인하고, 바꾸고 싶다면 오른쪽에 입력하세요.</p></div><span class="pill quiet">선택 입력</span></div><div class="purpose-grid"><div><div id="purpose-original" class="original-value"></div><div id="purpose-assessment" class="purpose-assessment"></div></div><div id="purpose-edit"><label for="purpose-text" class="field-label">대체할 사용 목적 · 비워두면 원래 목적 유지</label><textarea id="purpose-text" maxlength="3000" rows="4" placeholder="한글 또는 영어로 입력하세요. 예: 공동 개발을 위한 기술·사업성 평가 / Evaluate a potential joint development project"></textarea><p class="micro language-hint">입력의 의미를 이해해 계약서 언어로 수정 문구를 작성합니다.</p></div></div></section>
+        <section class="panel"><div class="section-heading"><span class="section-number">03</span><div><h2>누구의 비밀정보를 보호하나요?</h2><p class="muted">실제 보호 범위와 공개자·수령자의 역할을 기준으로 분류합니다.</p></div></div><div id="nda-type" class="nda-type"></div></section>
+        <section class="panel"><div class="section-heading"><span class="section-number">04</span><div><h2>바꾸고 싶은 조건이 있나요?</h2><p class="muted">한글·영문 모두 입력할 수 있습니다. 빈칸은 원문 유지이며, 계약기간과 존속기간은 별도로 입력하세요.</p></div><span class="pill quiet">선택 입력</span></div><div id="condition-list" class="condition-grid"></div></section>
+        <div id="existing-revisions" class="notice" hidden><label><input id="accept-existing" type="checkbox"> 기존 변경내용을 수락한 사본을 새로운 검토 기준으로 사용합니다. 기존 변경 이력이 있는 원본은 별도로 보관됩니다.</label></div>
+        <div class="action-bar"><p>1–16번은 기본 검토 · 17번 추가 권고는 이후 선택</p><button id="review-button" class="button primary" type="submit">검토 및 1차 수정본 생성 →</button></div>
+      </form>
+    </section>
+    <section id="step-3" class="step-panel" hidden aria-labelledby="review-title">
+      <div class="page-heading"><div><p class="eyebrow">REVIEW & RECOMMENDATIONS</p><h1 id="review-title">수정본을 확인해주세요.</h1><p id="review-summary" class="muted"></p></div><button id="back-preferences" class="text-button" type="button">← 검토 기준 변경</button></div>
+      <div id="review-context" class="review-context"></div><div id="review-metrics" class="metrics"></div><div id="review-questions"></div>
+      <details class="panel review-detail"><summary><span>입력 요청 해석 · 반영 상태</span><span class="muted">한글·영문 입력 확인 ＋</span></summary><div id="preference-results"></div></details>
+      <div class="download-panel"><span class="word-badge">W</span><div><h2>1차 검토 수정본</h2><p>기본 검토와 본문 검토 메모를 변경내용 추적으로 반영합니다.</p></div><a id="download-v1" class="button primary" href="#" download>DOCX 다운로드 ↓</a></div>
+      <details class="panel review-detail"><summary><span>17개 항목 검토 결과</span><span class="muted">검토 근거와 변경 내용 ＋</span></summary><div id="checklist"></div></details>
+      <details class="panel review-detail"><summary><span>본문 변경 내역</span><span class="muted">수정 전 · 후 비교 ＋</span></summary><div id="edit-list"></div></details>
+      <section class="panel other-section"><div class="section-heading"><span class="section-number">17</span><div><h2>기타 조항 전체 요약</h2><p class="muted">1–16번 외의 조항을 모두 요약합니다. 특이사항이 없는 조항도 확인할 수 있습니다.</p></div></div><div id="other-clause-list"></div></section>
+      <div class="section-heading recommendations-heading"><span class="section-number">17</span><div><h2>추가 권고사항</h2><p class="muted">우리 회사의 입장에서 검토한 특이사항입니다. ‘채택’한 항목만 최종본에 반영됩니다.</p></div></div>
+      <div id="recommendation-toolbar" class="recommendation-toolbar"><span class="micro">반영할 수정사항을 직접 선택하세요.</span><div><button id="select-all" class="text-button" type="button">전체 채택</button><span aria-hidden="true">/</span><button id="clear-selection" class="text-button" type="button">선택 해제</button></div></div>
+      <div id="recommendation-list"></div>
+      <div class="action-bar"><p id="selection-summary" aria-live="polite">채택 0건</p><button id="finalize-button" class="button primary" type="button">선택사항 반영 · 최종본 생성 →</button></div>
+    </section>
+    <section id="step-4" class="step-panel" hidden aria-labelledby="final-title">
+      <div class="final-heading"><span class="success-mark" aria-hidden="true">✓</span><p class="eyebrow">READY FOR YOUR REVIEW</p><h1 id="final-title">최종 수정본이 준비되었습니다.</h1><p class="muted">기본 검토와 채택한 권고사항을 하나의 수정본에 담았습니다.<br>Word에서 변경내용을 확인하고 수락하거나 거절하세요.</p></div>
+      <div class="final-card"><div class="final-document"><span class="word-badge">W</span><div><span class="eyebrow">TRACKED CHANGES · V2</span><h2 id="final-filename">NDA 최종 수정본.docx</h2><p id="final-count" class="muted"></p></div></div><a id="download-v2" class="button primary full" href="#" download>최종 수정본 다운로드 ↓</a><div class="version-links"><a id="download-original" href="#" download>업로드 원본</a><a id="download-baseline" href="#" download>검토 기준 사본</a><a id="download-v1-again" href="#" download>1차 수정본</a></div></div>
+      <div id="final-adopted" class="panel final-summary"></div><div id="final-questions"></div>
+      <div class="final-actions"><button id="back-recommendations" class="button secondary" type="button">권고사항 다시 선택</button><button class="button secondary restart" type="button">새 문서 검토</button><button id="delete-case" class="text-button" type="button">서버에서 자료 삭제</button></div>
+      <p class="final-note">확인사항이 남은 문서는 검토 초안입니다. 체결 전 최종 법률 판단과 수정 문구를 확인해 주세요.</p>
+    </section>
+  </main>
+  <footer><span>NDA STUDIO</span><span>Clear terms. Considered decisions.</span><span>검토를 위한 워크스페이스</span></footer>
+  </div>
+  <dialog id="guide-dialog" aria-labelledby="guide-title"><div class="dialog-heading"><div><p class="eyebrow">YOUR REVIEW, EXPLAINED</p><h2 id="guide-title">작은 단계로, 꼼꼼하게.</h2></div><button id="close-guide" type="button" class="icon-button" aria-label="검토 가이드 닫기">×</button></div><ol class="guide-steps"><li><strong>계약서 업로드</strong><p>DOC 또는 DOCX 파일을 올리면 당사자와 주요 조건을 추출합니다.</p></li><li><strong>우리 회사와 선호 조건 설정</strong><p>대리하는 회사를 선택하고 사용 목적, 준거법, 분쟁해결, 기간을 한글이나 영어로 입력하세요.</p></li><li><strong>17개 항목 검토와 추가 수정 선택</strong><p>1차 수정본을 확인하고, 기타 조항의 권고사항 중 원하는 내용만 채택하세요.</p></li><li><strong>Word 수정본 다운로드</strong><p>실제 변경 내용 추적이 담긴 DOCX를 받습니다. Word에서 각 수정을 수락하거나 거절할 수 있습니다.</p></li></ol><div class="guide-bottom"><span class="pill">DOC · DOCX</span><span class="pill">한글 · English</span><span class="pill">17개 검토 항목</span></div></dialog>
+  <div id="busy-overlay" class="busy-overlay" hidden><div class="busy-card" role="status" aria-live="polite"><span class="spinner"></span><h2 id="busy-title">문서를 읽고 있습니다.</h2><p id="busy-description">잠시만 기다려 주세요.</p><p class="micro">문서 길이와 서비스 응답에 따라 수 분이 걸릴 수 있습니다.</p></div></div>
+  <dialog id="setup-dialog"><div class="dialog-heading"><h2>검토 서비스 연결</h2><button id="close-setup" type="button" class="icon-button" aria-label="설정 안내 닫기">×</button></div><p>웹 화면과 예시 체험은 로컬 서버에서 실행됩니다. 실제 계약 분석에는 AI API 키가 필요합니다.</p><ol class="setup-steps"><li><code>NDA-Automation</code> 폴더 바로 위의 <code>key.txt</code>에 API 키를 한 줄로 저장합니다.</li><li>서버가 시작할 때 해당 파일을 우선 읽습니다. 키는 브라우저에 전달하지 않으며 <code>.env</code>에 복사할 필요가 없습니다.</li><li><code>start.cmd</code>를 실행하고 <a href="http://localhost:4173">localhost:4173</a>에 접속합니다. 키 변경 후 서버를 다시 실행하세요.</li></ol><p class="muted">다른 위치의 파일은 <code>.env</code>의 <code>OPENAI_API_KEY_FILE</code>로 지정할 수 있습니다. 기본 키 파일이 없으면 <code>OPENAI_API_KEY</code> 환경변수를 사용합니다.</p><p id="converter-status" class="notice"></p><p class="muted">문서는 이 서버의 메모리에 최대 2시간 보관됩니다. DOC 변환 임시 파일은 변환 직후 삭제합니다. OpenAI API 요청에는 store:false를 사용하며, 제공자의 데이터 처리 정책이 별도로 적용됩니다.</p></dialog>
+</body>
+</html>

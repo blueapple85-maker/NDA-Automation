@@ -1,0 +1,22 @@
+{
+  "name": "nda-review-studio",
+  "version": "1.0.0",
+  "private": true,
+  "description": "NDA review workspace with real OOXML tracked revisions",
+  "scripts": {
+    "start": "node --env-file-if-exists=.env server/index.cjs",
+    "test": "node --test tests/config.test.cjs tests/evidence.test.cjs tests/studio.test.cjs tests/api.test.cjs tests/ui.test.cjs tests/log.test.cjs"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "dependencies": {
+    "@xmldom/xmldom": "^0.9.12",
+    "ajv": "^8.20.0",
+    "diff": "^9.0.0",
+    "fflate": "^0.8.3"
+  },
+  "devDependencies": {
+    "jsdom": "^30.1.0"
+  }
+}
