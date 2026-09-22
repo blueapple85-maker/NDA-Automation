@@ -4,8 +4,9 @@
   "private": true,
   "description": "NDA review workspace with real OOXML tracked revisions",
   "scripts": {
+    "build": "node scripts/build-static.cjs",
     "start": "node --env-file-if-exists=.env server/index.cjs",
-    "test": "node --test tests/config.test.cjs tests/evidence.test.cjs tests/studio.test.cjs tests/api.test.cjs tests/ui.test.cjs tests/log.test.cjs"
+    "test": "node --test tests/config.test.cjs tests/evidence.test.cjs tests/studio.test.cjs tests/api.test.cjs tests/ui.test.cjs tests/log.test.cjs tests/static-demo.test.cjs"
   },
   "engines": {
     "node": ">=22"

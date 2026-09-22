@@ -4,6 +4,7 @@ const {createHash}=require('node:crypto');
 const Ajv=require('ajv');
 const {ReviewError}=require('./errors.cjs');
 const {logEvent}=require('./log.cjs');
+const {noteAddressee}=require('./parties.cjs');
 const {verifyEvidence,verifyEvidenceTree,correctionFor}=require('./evidence.cjs');
 const {extractionSchema,reviewSchema,wireReviewSchema}=require('./schemas.cjs');
 const ajv=new Ajv({allErrors:true});
@@ -20,9 +21,6 @@ function validateFacts(result,records){
   result.ndaEvidence.forEach(e=>verifyEvidence(e,records));
   for(const key of Object.keys(fieldNames))result[key].evidence.forEach(e=>verifyEvidence(e,records));
   return result;
-}
-function noteAddressee(facts,input){
-  return facts.parties.filter(p=>p.id!==input.companyId).map(p=>(p.shortName||p.name).replace(/[\[\]:\r\n]/g,' ').trim()).join(', ');
 }
 function neutralitySentence(topic,language,draft=''){
   const korean=language==='ko'||(!['en','ko'].includes(language)&&/[가-힣]/.test(draft));

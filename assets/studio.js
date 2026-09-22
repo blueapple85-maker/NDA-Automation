@@ -1,6 +1,7 @@
 (() => {
   'use strict';
   const $=id=>document.getElementById(id);
+  const staticDemo=document.documentElement.dataset.runtime==='static-demo';
   const esc=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const titles=['계약당사자','Affiliate','비밀정보 정의','사용 목적','비밀유지 의무','관계자 위반 책임','네 가지 예외','강제 공개','계약·존속기간','소유권·라이선스','보증 부인','반환·폐기','준거법','분쟁해결','Publicity','추가 계약 의무 없음','기타 조항 전체'];
   const fields=[['law','준거법','원하는 준거법을 입력하세요'],['dispute','분쟁해결','방식·기관·중재지·언어 등 원하는 조건'],['term','계약기간','원하는 기간과 기산점을 입력하세요'],['survival','비밀유지 존속기간','원하는 존속기간과 기산점 또는 존속 없음']];
@@ -33,6 +34,7 @@
   function busy(title,description){$('busy-title').textContent=title;$('busy-description').textContent=description;$('busy-overlay').hidden=false;document.querySelector('.app-shell').inert=true;document.querySelector('.workspace-sidebar').inert=true;}
   async function perform(fn){if(state.busy)return;state.busy=true;clearError();try{await fn();}catch(e){error(e,e.diagnostic?.retryable===false?null:fn);}finally{state.busy=false;$('busy-overlay').hidden=true;document.querySelector('.app-shell').inert=false;document.querySelector('.workspace-sidebar').inert=false;if($('error').hidden)$(`step-${state.step}`).querySelector('h1')?.focus({preventScroll:true});}}
   async function api(url,options={}){
+    if(staticDemo){if(!window.NDAStaticDemo)throw new Error('데모 실행 파일을 불러오지 못했습니다. 페이지를 새로고침해 주세요.');return window.NDAStaticDemo.request(url,options);}
     if(location.protocol==='file:')throw new Error('파일을 직접 열어 화면을 보고 있습니다. start.cmd를 실행한 뒤 http://localhost:4173에서 검토 기능을 이용해 주세요.');
     let response;try{response=await fetch(url,{...options,headers:{'X-NDA-Request':'1',...(options.headers||{})}});}catch{throw new Error('로컬 서버에 연결할 수 없습니다. start.cmd 실행 상태를 확인해 주세요.');}
     let result;try{result=await response.json();}catch{throw new Error('서버 응답을 읽지 못했습니다. start.cmd로 실행한 주소인지 확인해 주세요.');}
@@ -45,6 +47,7 @@
   function notices(list){return list?.length?`<div class="notice"><ul>${[...new Set(list)].map(t=>`<li>${esc(t)}</li>`).join('')}</ul></div>`:'';}
   function selectFile(file){
     clearError();if(!file)return;
+    if(staticDemo&&!/\.docx$/i.test(file.name)){removeFile();error('정적 데모에서는 체험용 DOCX만 지원합니다. 「체험용 NDA 받기」로 받은 파일을 선택해 주세요.');return;}
     if(!/\.(docx|doc)$/i.test(file.name)){removeFile();error('DOCX 또는 DOC 파일을 선택해 주세요.');return;}
     if(!file.size||file.size>10*1024*1024){removeFile();error('0바이트를 초과하고 10MB 이하인 파일을 선택해 주세요.');return;}
     state.file=file;state.item=null;state.review=null;state.final=null;state.maxStep=1;state.dirty=false;syncNavigation();$('demo-banner').hidden=true;$('selected-file').hidden=false;$('file-name').textContent=file.name;$('file-size').textContent=`${(file.size/1024).toFixed(1)} KB`;$('upload-button').disabled=false;$('drop-zone').classList.add('has-file');
@@ -77,7 +80,7 @@
     if(!company)throw new Error('대리하는 회사를 선택해 주세요.');
     return {companyId:company.value,overrides:Object.fromEntries(fields.map(([key])=>[key,$(`override-${key}`).value.trim()])),purposeText:$('purpose-text').value.trim(),acceptExistingRevisions:$('accept-existing').checked};
   }
-  async function review(){const input=preferenceInput();busy('우리 회사의 입장에서 검토하고 있습니다.','17개 기준을 검토하고 Word 변경내용 추적으로 작성합니다. 문서 길이에 따라 몇 분이 걸릴 수 있으며, 결과가 길면 자동으로 다시 요청합니다.');state.review=await post(`/api/cases/${state.item.id}/review`,input);state.choices={};state.final=null;state.dirty=false;state.maxStep=3;$('stale-notice').hidden=true;renderReview();showStep(3);}
+  async function review(){const input=preferenceInput();busy(staticDemo?'예시 수정본을 만들고 있습니다.':'우리 회사의 입장에서 검토하고 있습니다.',staticDemo?'준비된 검토 예시와 입력 문구를 Word 변경내용 추적으로 반영합니다.':'17개 기준을 검토하고 Word 변경내용 추적으로 작성합니다. 문서 길이에 따라 몇 분이 걸릴 수 있으며, 결과가 길면 자동으로 다시 요청합니다.');state.review=await post(`/api/cases/${state.item.id}/review`,input);state.choices={};state.final=null;state.dirty=false;state.maxStep=3;$('stale-notice').hidden=true;renderReview();showStep(3);}
   function setLink(id,url,name){$(id).href=url;$(id).download=name;}
   function renderReview(){
     const r=state.review;$('review-summary').textContent=r.summary;
@@ -107,11 +110,18 @@
     $('final-adopted').innerHTML=`<h3>반영한 추가 권고사항</h3>${f.adopted.length?`<ul>${f.adopted.map(a=>`<li>${esc(a.title)}</li>`).join('')}</ul>`:'<p class="muted">추가 채택 없이 기본 검토 수정본을 생성했습니다.</p>'}${omitted.length?`<div class="not-adopted"><h3>반영하지 않은 권고사항</h3><ul>${omitted.map(rec=>`<li>${esc(rec.title)} · ${state.choices[rec.id]==='reject'?'미채택':'보류'}</li>`).join('')}</ul></div>`:''}<p class="micro">미채택 ${counts.reject}건 · 보류 ${counts.defer}건은 반영하지 않았습니다.<br>V2 · ${esc(f.generatedAt)} 생성</p>`;
     $('final-questions').innerHTML=notices(r.questions);
   }
-  function reset(){clearError();clearReviewPanels();state.item=null;state.review=null;state.final=null;state.choices={};removeFile();showStep(1);}
-  async function deleteCase(){busy('검토 자료를 삭제하고 있습니다.','이 서버에 보관된 원본과 수정본을 삭제합니다.');await api(`/api/cases/${state.item.id}`,{method:'DELETE'});reset();}
+  function reset(){if(staticDemo)window.NDAStaticDemo?.clear();clearError();clearReviewPanels();state.item=null;state.review=null;state.final=null;state.choices={};removeFile();showStep(1);}
+  async function deleteCase(){busy('검토 자료를 삭제하고 있습니다.',staticDemo?'이 브라우저의 체험 자료를 지웁니다.':'이 서버에 보관된 원본과 수정본을 삭제합니다.');await api(`/api/cases/${state.item.id}`,{method:'DELETE'});reset();}
   function openSetup(){const d=$('setup-dialog');if(d.showModal)d.showModal();else d.setAttribute('open','');}
   function preferencesChanged(){if(!state.review)return;state.dirty=true;state.maxStep=2;state.final=null;$('stale-notice').hidden=false;syncNavigation();}
   async function checkStatus(){
+    if(staticDemo){
+      const ready=!!window.NDAStaticDemo;
+      $('connection-status').innerHTML=`<i></i>${ready?'브라우저 데모':'데모 로딩 오류'}`;
+      $('connection-status').classList.toggle('ready',ready);$('connection-status').title='서버와 API 호출 없이 이 브라우저에서 실행합니다.';
+      $('setup-notice').hidden=ready;$('setup-notice-text').textContent='데모 파일을 불러오지 못했습니다. 페이지를 새로고침해 주세요.';
+      return;
+    }
     try{const s=await api('/api/status');state.status=s;$('connection-status').innerHTML=`<i></i>${s.aiConfigured?'AI 연결 준비':'예시 체험 가능'}`;$('connection-status').title=s.aiKeySource==='file'?'API 키 파일에서 키를 불러왔습니다.':s.aiConfigured?'서버 환경변수에서 키를 불러왔습니다.':'API 키 설정이 필요합니다.';$('connection-status').classList.toggle('ready',s.aiConfigured);$('setup-notice').hidden=s.aiConfigured;$('setup-notice-text').textContent='실제 문서 검토는 API 키 연결 후 사용할 수 있습니다. 예시 체험으로 전체 흐름을 먼저 확인하세요.';$('converter-status').textContent=s.docConverter?`DOC 변환 준비됨 · ${s.docConverter}`:'DOC 변환에는 Microsoft Word 또는 LibreOffice가 필요합니다. DOCX는 바로 업로드할 수 있습니다.';}
     catch{$('connection-status').innerHTML='<i></i>서버 연결 필요';$('setup-notice').hidden=false;$('setup-notice-text').textContent='화면을 사용하려면 start.cmd 실행 후 http://localhost:4173에 접속하세요.';$('converter-status').textContent='서버 연결 후 DOC 변환 기능의 설치 상태를 확인할 수 있습니다.';}
   }
@@ -128,7 +138,11 @@
   $('finalize-button').addEventListener('click',()=>perform(finalize));$('back-preferences').addEventListener('click',()=>{clearError();showStep(2);});$('back-recommendations').addEventListener('click',()=>{clearError();showStep(3);});document.querySelectorAll('.restart').forEach(b=>b.addEventListener('click',reset));$('delete-case').addEventListener('click',()=>perform(deleteCase));
   $('setup-button').addEventListener('click',openSetup);$('setup-inline').addEventListener('click',openSetup);$('close-setup').addEventListener('click',()=>{$('setup-dialog').close?.();$('setup-dialog').removeAttribute('open');});$('dismiss-error').addEventListener('click',clearError);$('retry-button').addEventListener('click',()=>{const fn=state.retry;if(fn)perform(fn);});
   document.querySelectorAll('a[download]').forEach(a=>a.addEventListener('click',async e=>{
+    if(staticDemo&&a.href.startsWith('blob:'))return;
     e.preventDefault();try{const res=await fetch(a.href);if(!res.ok){const data=await res.json();throw new Error(data.error||'다운로드에 실패했습니다.');}const blob=await res.blob(),url=URL.createObjectURL(blob),link=document.createElement('a');link.href=url;link.download=a.download;document.body.appendChild(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),30000);}catch(e){error(e.message);}
   }));
+  $('sample-download')?.addEventListener('click',()=>{
+    try{const a=document.createElement('a');a.href=window.NDAStaticDemo.sample();a.download='DEMO-Mutual-NDA.docx';document.body.appendChild(a);a.click();a.remove();}catch{error('체험용 문서를 생성하지 못했습니다. 페이지를 새로고침해 주세요.');}
+  });
   checkStatus();
 })();

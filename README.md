@@ -1,6 +1,37 @@
 # NDA Studio
 
-비밀유지계약(NDA)을 업로드하고, 대리하는 회사의 입장에서 17개 항목을 검토하는 로컬 웹사이트입니다. HTML/CSS/JavaScript 화면과 Node.js 서버로 구성됩니다.
+NDA 검토 흐름을 체험하는 **Vercel용 정적 데모**와 기존 **로컬 AI 검토 앱**을 포함합니다. Vercel 배포는 기본적으로 정적 데모를 사용하며, 별도 백엔드·API 키·데이터베이스 없이 동작합니다. 아래 로컬 실행 설명은 실제 AI 검토 앱에 해당합니다.
+
+## Vercel 정적 데모 배포
+
+프로젝트의 `vercel.json`이 빌드와 공개 폴더를 지정합니다. 변경 파일을 연결된 Git 저장소에 반영한 뒤 재배포하세요.
+
+| 설정 | 값 |
+| --- | --- |
+| Root Directory | `package.json`과 `vercel.json`이 있는 폴더. 저장소 루트에 파일이 있으면 빈칸, 상위 저장소라면 `NDA-Automation` |
+| Framework Preset | Other |
+| Install Command | `npm ci --include=dev` |
+| Build Command | `npm run build` |
+| Output Directory | `dist` |
+| 환경변수 | 데모에는 필요 없음 |
+
+기존 대시보드 설정이 `.` 또는 다른 Output Directory를 강제로 지정했다면 `dist`로 맞추세요. `npm start`는 로컬 AI 서버 실행 명령이므로 Vercel의 빌드 명령으로 사용하지 않습니다. `key.txt`, `.env`, 로그, 원본 NDA를 업로드할 필요가 없습니다. `.vercelignore`는 로컬 실행 자료를 제외하고, 빌드는 공개 파일만 `dist`에 만듭니다.
+
+```sh
+npm ci
+npm run build
+```
+
+생성된 `dist/index.html`은 직접 열거나 `dist` 폴더 전체를 정적 호스팅에 올려 사용할 수 있습니다. 빌드에는 Node.js가 필요하지만, 배포 후에는 브라우저만 사용합니다. 외부 CDN을 사용하지 않습니다.
+
+- 예시 바로 시작 → 대리 회사·조건 입력 → 17개 검토 예시·추가 권고 채택 → V1/V2 DOCX 다운로드까지 네 단계가 동작합니다.
+- 「체험용 NDA 받기」로 내려받은 DOCX를 다시 업로드할 수 있습니다. 다른 계약, 수정된 예시, 기존 변경 이력이 있는 문서는 예시 결과를 적용하지 않고 오류를 안내합니다. 일반 NDA의 AI 분석과 DOC 변환은 제공하지 않습니다.
+- 한글·영문 입력은 **그대로 삽입**합니다. 의미 해석·번역·실시간 market practice 검토는 수행하지 않습니다. 회사 선택에 따라 상대방 Note 수신 회사가 바뀝니다.
+- Word 파일의 실제 `w:ins` / `w:del`을 브라우저에서 생성합니다. 추가 권고 중 채택한 것만 V2에 반영하며, 원본·검토 기준 사본·V1도 다운로드할 수 있습니다.
+- 계약과 입력은 현재 탭 메모리에만 있고 새로고침·초기화 시 사라집니다. 브라우저 영구 저장소를 사용하지 않으며 API 요청이나 서버 JSONL 로그를 생성하지 않습니다.
+- `/api/demo`나 `/api/status`는 정적 배포에 존재하지 않습니다. 이제 화면은 해당 API를 호출하지 않으므로 직접 API 주소를 열면 404여도 데모는 정상입니다. 첫 화면 오른쪽 위의 **브라우저 데모** 표시와 네 단계 진행으로 확인하세요.
+
+Vercel Functions로 실제 AI 기능을 같은 프로젝트에서 운영하는 방식도 가능하지만 현재 로컬 구조를 그대로 올리는 것과는 다릅니다. 기존 10MB 업로드·DOC 변환·프로세스 메모리 상태를 이전해야 하고 실행 시간도 고려해야 합니다. 이번 배포는 별도 서버 없이 확실하게 시연할 수 있도록 요청한 정적 데모 방식을 사용합니다. 참고: [Node.js 런타임](https://vercel.com/docs/functions/runtimes/node-js), [요청 크기·실행 시간 제한](https://vercel.com/docs/functions/limitations).
 
 ## 실행
 
